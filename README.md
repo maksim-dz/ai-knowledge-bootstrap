@@ -26,7 +26,8 @@ If both are set, go to step 2. Otherwise stop, give the user the instructions be
 
 1. Create a fine-grained token at https://github.com/settings/personal-access-tokens/new
    - Repository access: Only select repositories → `maksim-dz/ai-knowledge`
-   - Repository permissions: Contents — Read and write; Pull requests — Read and write; Checks — Read-only.
+   - Repository permissions: Contents — Read and write; Pull requests — Read and write; Actions — Read-only.
+     Fine-grained tokens have no Checks permission; Actions is what the knowledge workflow reads.
      Add Workflows — Read and write only for changes to CI.
 2. Store it outside the conversation. On macOS, in a regular terminal:
    ```sh
