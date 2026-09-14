@@ -45,14 +45,37 @@ stays in the transcript.
 
 ### 2. Verify access
 
+The commands use `GIT_HUB_TOKEN`; when the token came from a fallback variable, use that variable instead.
+
+Find the account the token belongs to. The login is not a secret; the token value is:
+
+```sh
+curl -s -H "Authorization: Bearer $GIT_HUB_TOKEN" https://api.github.com/user | grep -m1 '"login"'
+```
+
+Check access to the knowledge repository:
+
 ```sh
 curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $GIT_HUB_TOKEN" \
   https://api.github.com/repos/maksim-dz/ai-knowledge
 ```
 
+In every result other than `200`, tell the user which variable supplied the token and which account login
+it belongs to, then the cause and the fix below. Never show the token value or part of it.
+
 - `200`: continue.
-- `401`: the token is invalid or expired; return to step 1.
-- `404`: the token cannot see `maksim-dz/ai-knowledge`; ask the user to fix its repository access.
+- `000`: the request did not reach GitHub, usually a sandbox or network restriction of the AI client.
+  Rerun the command with network access before judging the token.
+- `401`: the token is invalid, expired, or revoked; no login is returned. Return to step 1.
+- `404`: the token works but cannot see `maksim-dz/ai-knowledge`. Name the likely cause:
+  - **Wrong account**: the login is not an account with access to `maksim-dz/ai-knowledge`. The variable
+    holds another account's token; point it at the right token, open a new terminal, and restart the client.
+  - **Repository not selected in a fine-grained token**: the login is right. Open
+    https://github.com/settings/personal-access-tokens, edit the token, and under Repository access select
+    `ai-knowledge` with the step 1 permissions. A repository that was deleted and recreated must be
+    selected again, even under the same name. The token value does not change, so no restart is needed.
+  - **Account without access**: a classic token of an account that is not a collaborator. Use a token of
+    an account with access, or ask the owner to add that account as a collaborator.
 
 The `gh` CLI is not required.
 
