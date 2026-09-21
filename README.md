@@ -15,14 +15,13 @@ Follow these steps in order. Never print, log, or write a token value.
 
 ### 1. Check environment variables
 
-Check whether these are set in the environment of the process running you; report only set or unset.
+Check whether this is set in the environment of the process running you; report only set or unset.
 
 | Variable | Meaning |
 |---|---|
-| `GIT_HUB_URL` | GitHub host: `github.com` |
 | `GIT_HUB_TOKEN` | GitHub token (fallbacks: `GITHUB_PERSONAL_ACCESS_TOKEN`, `GITHUB_TOKEN`, `GH_TOKEN`) |
 
-If both are set, go to step 2. Otherwise stop, give the user the instructions below, and wait.
+If it is set, go to step 2. Otherwise stop, give the user the instructions below, and wait.
 
 1. Create a fine-grained token at https://github.com/settings/personal-access-tokens/new
    - Repository access: Only select repositories → `maksim-dz/ai-knowledge`
@@ -33,12 +32,11 @@ If both are set, go to step 2. Otherwise stop, give the user the instructions be
    ```sh
    security add-generic-password -U -a "$USER" -s GIT_HUB_TOKEN -w
    cat >> ~/.zshenv <<'EOF'
-   export GIT_HUB_URL=github.com
    export GIT_HUB_TOKEN="$(security find-generic-password -a "$USER" -s GIT_HUB_TOKEN -w 2>/dev/null)"
    EOF
    ```
-   The first command asks for the token and keeps it in the Keychain. On other systems, export both
-   variables from the shell profile that starts the AI client.
+   The first command asks for the token and keeps it in the Keychain. On other systems, export the
+   variable from the shell profile that starts the AI client.
 3. Open a new terminal, start the AI client again, and give it this link again.
 
 Offer pasting the token into the conversation only if the user asks for it, and say once that it then
