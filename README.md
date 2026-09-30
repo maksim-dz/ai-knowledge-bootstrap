@@ -19,7 +19,9 @@ Check whether this is set in the environment of the process running you; report 
 
 | Variable | Meaning |
 |---|---|
-| `GIT_HUB_TOKEN` | GitHub token (fallbacks: `GITHUB_PERSONAL_ACCESS_TOKEN`, `GITHUB_TOKEN`, `GH_TOKEN`) |
+| `${GIT_HUB_TOKEN}` | GitHub token (fallbacks: `${GITHUB_PERSONAL_ACCESS_TOKEN}`, `${GITHUB_TOKEN}`, `${GH_TOKEN}`) |
+
+`${NAME}` means the environment variable `NAME`: `$NAME` in a POSIX shell, `$env:NAME` in PowerShell.
 
 If it is set, go to step 2. Otherwise stop, give the user the instructions below, and wait.
 
@@ -28,34 +30,47 @@ If it is set, go to step 2. Otherwise stop, give the user the instructions below
    - Repository permissions: Contents — Read and write; Pull requests — Read and write; Actions — Read-only.
      Fine-grained tokens have no Checks permission; Actions is what the knowledge workflow reads.
      Add Workflows — Read and write only for changes to CI.
-2. Store it outside the conversation. On macOS, in a regular terminal:
-   ```sh
-   security add-generic-password -U -a "$USER" -s GIT_HUB_TOKEN -w
-   cat >> ~/.zshenv <<'EOF'
-   export GIT_HUB_TOKEN="$(security find-generic-password -a "$USER" -s GIT_HUB_TOKEN -w 2>/dev/null)"
-   EOF
-   ```
-   The first command asks for the token and keeps it in the Keychain. On other systems, export the
-   variable from the shell profile that starts the AI client.
-3. Open a new terminal, start the AI client again, and give it this link again.
+2. Store it outside the conversation, as the environment variable `GIT_HUB_TOKEN`, in a place the
+   non-interactive commands of the AI client read:
+   - **macOS** (zsh), in a regular terminal. The first command asks for the token and keeps it in the
+     Keychain:
+     ```sh
+     security add-generic-password -U -a "$USER" -s GIT_HUB_TOKEN -w
+     cat >> ~/.zshenv <<'EOF'
+     export GIT_HUB_TOKEN="$(security find-generic-password -a "$USER" -s GIT_HUB_TOKEN -w 2>/dev/null)"
+     EOF
+     ```
+   - **Linux**: an `export GIT_HUB_TOKEN="..."` line in `~/.zshenv` (zsh) or in `~/.profile` (bash) of
+     the login session that starts the AI client. `~/.zshrc` and `~/.bashrc` are not read by
+     non-interactive commands.
+   - **Windows**, in PowerShell. The command asks for the token without showing it and stores it as a
+     user variable:
+     ```powershell
+     $t = [System.Net.NetworkCredential]::new('', (Read-Host 'GitHub token' -AsSecureString)).Password
+     [Environment]::SetEnvironmentVariable('GIT_HUB_TOKEN', $t, 'User'); Remove-Variable t
+     ```
+     Inside WSL or Git Bash the Linux line applies instead.
+3. Fully restart the AI client (from a new terminal where it is started from one) and give it this link
+   again.
 
 Offer pasting the token into the conversation only if the user asks for it, and say once that it then
 stays in the transcript.
 
 ### 2. Verify access
 
-The commands use `GIT_HUB_TOKEN`; when the token came from a fallback variable, use that variable instead.
+The commands use `${GIT_HUB_TOKEN}` and are written for a POSIX shell; when the token came from a fallback
+variable, use that variable instead. In PowerShell write `$env:GIT_HUB_TOKEN` and call `curl.exe`.
 
 Find the account the token belongs to. The login is not a secret; the token value is:
 
 ```sh
-curl -s -H "Authorization: Bearer $GIT_HUB_TOKEN" https://api.github.com/user | grep -m1 '"login"'
+curl -s -H "Authorization: Bearer ${GIT_HUB_TOKEN}" https://api.github.com/user | grep -m1 '"login"'
 ```
 
 Check access to the knowledge repository:
 
 ```sh
-curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $GIT_HUB_TOKEN" \
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer ${GIT_HUB_TOKEN}" \
   https://api.github.com/repos/maksim-dz/ai-knowledge
 ```
 
@@ -81,7 +96,7 @@ The `gh` CLI is not required.
 ### 3. Follow INIT.md
 
 ```sh
-curl -fsSL -H "Authorization: Bearer $GIT_HUB_TOKEN" -H "Accept: application/vnd.github.raw" \
+curl -fsSL -H "Authorization: Bearer ${GIT_HUB_TOKEN}" -H "Accept: application/vnd.github.raw" \
   https://api.github.com/repos/maksim-dz/ai-knowledge/contents/INIT.md
 ```
 
