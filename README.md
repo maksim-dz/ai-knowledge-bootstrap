@@ -1,3 +1,6 @@
+> **Moved to Play-Gaming.** This repository is archived and no longer updated.
+> Use [Play-Gaming/ai-knowledge-bootstrap](https://github.com/Play-Gaming/ai-knowledge-bootstrap) instead.
+
 # ai-knowledge bootstrap
 
 Public entry point for connecting an AI client to the private knowledge repository
